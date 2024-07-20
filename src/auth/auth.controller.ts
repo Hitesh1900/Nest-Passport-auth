@@ -1,19 +1,25 @@
 import { Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { LocalAuthGuard } from './local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  async register(@Request() req) {
-    return this.authService.register(req.body.username, req.body.password);
+  @Post('login')
+  @UseGuards(AuthGuard('local'))
+  async login(@Request() req) {
+    return this.authService.login(req.user);
   }
 
-  @UseGuards(LocalAuthGuard)
-  @Post('login')
-  async login(@Request() req) {
-    return req.user;
+  @Post('google')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin() {
+  }
+
+  @Post('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleLoginCallback(@Request() req) {
+    return this.authService.login(req.user);
   }
 }
